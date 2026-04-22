@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Đặt xe</string>
+    <string name="google_maps_key">YOUR_API_KEY_HERE</string>
+    <!-- API key Maps: đặt trong res/values/api_keys.xml (không commit) — mẫu: android/app/api_keys.xml.example -->
+</resources>
