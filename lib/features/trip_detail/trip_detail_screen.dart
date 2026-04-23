@@ -98,6 +98,70 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
     return v == VehicleTypes.car ? 'Ô tô' : 'Xe máy';
   }
 
+  Future<void> _showRatingDialog(Trip trip) async {
+    int localRating = 5;
+    final commentController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Đánh giá chuyến đi'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Bạn thấy chuyến đi thế nào?'),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    icon: Icon(
+                      index < localRating ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                      size: 32,
+                    ),
+                    onPressed: () => setState(() => localRating = index + 1),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: commentController,
+                decoration: const InputDecoration(
+                  hintText: 'Nhập nhận xét (tùy chọn)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Bỏ qua'),
+            ),
+            FilledButton(
+              onPressed: () {
+                context.read<TripRepository>().updateRating(
+                      widget.tripId,
+                      localRating,
+                      commentController.text.trim(),
+                    );
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Cảm ơn bạn đã đánh giá!')),
+                );
+              },
+              child: const Text('Gửi'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final repo = context.read<TripRepository>();
@@ -185,6 +249,15 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                 title: const Text('Giá'),
                 subtitle: Text('${trip.priceVnd.toString()} đ'),
               ),
+              if (trip.status == TripStatuses.completed && trip.rating != null)
+                Card(
+                  color: Colors.amber.shade50,
+                  child: ListTile(
+                    leading: const Icon(Icons.stars, color: Colors.amber),
+                    title: const Text('Đánh giá của bạn'),
+                    subtitle: Text('${trip.rating} sao - ${trip.comment ?? ""}'),
+                  ),
+                ),
               ListTile(
                 title: const Text('Điểm đón'),
                 subtitle: Text(
@@ -239,13 +312,27 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
               if (trip.status == TripStatuses.inProgress) ...[
                 const SizedBox(height: 8),
                 FilledButton.tonal(
-                  onPressed: () => repo.updateStatus(
-                    widget.tripId,
-                    TripStatuses.completed,
-                  ),
+                  onPressed: () async {
+                    await repo.updateStatus(
+                      widget.tripId,
+                      TripStatuses.completed,
+                    );
+                    if (mounted) {
+                      _showRatingDialog(trip);
+                    }
+                  },
                   child: const Text('Giả lập: hoàn thành chuyến'),
                 ),
               ],
+              if (trip.status == TripStatuses.completed && trip.rating == null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showRatingDialog(trip),
+                    icon: const Icon(Icons.rate_review),
+                    label: const Text('Viết đánh giá'),
+                  ),
+                ),
             ],
           );
         },

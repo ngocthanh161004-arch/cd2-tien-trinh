@@ -21,6 +21,8 @@ class Trip {
     required this.status,
     required this.createdAt,
     required this.updatedAt,
+    this.rating,
+    this.comment,
   });
 
   final String? id;
@@ -37,6 +39,8 @@ class Trip {
   final String status;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int? rating;
+  final String? comment;
 
   /// Ghi document mới — `createdAt` / `updatedAt` do server gán.
   Map<String, dynamic> toCreateMap() {
@@ -73,6 +77,8 @@ class Trip {
       'status': status,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'rating': rating,
+      'comment': comment,
     };
   }
 
@@ -92,6 +98,8 @@ class Trip {
       status: d['status'] as String,
       createdAt: (d['createdAt'] as Timestamp).toDate(),
       updatedAt: (d['updatedAt'] as Timestamp).toDate(),
+      rating: d['rating'] as int?,
+      comment: d['comment'] as String?,
     );
   }
 

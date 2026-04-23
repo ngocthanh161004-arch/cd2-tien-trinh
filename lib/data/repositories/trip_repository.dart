@@ -51,4 +51,12 @@ class TripRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<void> updateRating(String tripId, int rating, String comment) {
+    return _trips.doc(tripId).update({
+      'rating': rating,
+      'comment': comment,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }
